@@ -1,0 +1,1 @@
+curl --location 'api-1-eb-web.pxsol.io/query/list6?search=OK&pos=ROOMFARES&lng=en&SearchID=45216646&ProductID=12724&Sku=1&Currency=USD&Email=NN&Tag=PmsLink&order_rooms=recommended&=null'

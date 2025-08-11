@@ -1,0 +1,16 @@
+curl --location 'https://api-1-eb-web.pxsol.io/search/insert' \
+--header 'accept: application/json, text/javascript, */*; q=0.01' \
+--header 'accept-language: en-US,en;q=0.9' \
+--header 'content-type: application/x-www-form-urlencoded; charset=UTF-8' \
+--header 'dnt: 1' \
+--header 'origin: https://www.roomfares.com' \
+--header 'priority: u=1, i' \
+--header 'referer: https://www.roomfares.com/' \
+--header 'sec-ch-ua: "Chromium";v="139", "Not;A=Brand";v="99"' \
+--header 'sec-ch-ua-mobile: ?0' \
+--header 'sec-ch-ua-platform: "macOS"' \
+--header 'sec-fetch-dest: empty' \
+--header 'sec-fetch-mode: cors' \
+--header 'sec-fetch-site: cross-site' \
+--header 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36' \
+--data 'location_google_search=Buenos+Aires%2C+Ciudad+Aut%C3%B3noma+de+Buenos+Aires%2C+Argentina&latitude=-34.6036739&longitude=-58.3821215&distance_radius=50000&location_search=Buenos+Aires%2C+Ciudad+Aut%C3%B3noma+de+Buenos+Aires%2C+Argentina&SearchType=lat_lng&Start=24%2F09%2F2025&End=26%2F09%2F2025&PartyType=double&MaxRooms=2&Nights=1&Channel=2&RateType=auto&Pos=ROOMFARES&Lng=en&Currency=USD&MaxAgeChildrenNumber=17&MaxAgeBabiesNumber=2&ReturnUrl=NoReturn&FromUrl=&Tag=&Source=Contact+Form&ProductTimezone=America%2FArgentina%2FBuenos_Aires&SearchID=45216646&Type=&Device=Computer&tag=PmsLink&UserType=&AgreementType=&GroupsForm=1%3A2%2C0%2C0&SkuID=&MinNights=0'

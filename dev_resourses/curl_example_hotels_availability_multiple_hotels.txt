@@ -1,0 +1,15 @@
+curl --location 'https://gateway-prod.pxsol.com/v2/hotels/availability?search_definition_id=46322969&currency=USD&lat=-34.6036739&lng=-58.3821215&distance_radius=50000&search_type=lat_lng&currency=USD&pos=ROOMFARES&order_by=distance&pxsol_auth_token=def50200870d2bf1764e001a52d49fec9e3fdc2bd8dc1a5a2454aad9ce854fafde36c529559d5e1613e6ecd272733800d83fe40583753333499e2cd1e04528ab62d6010fcd896e109d486133cad6ba09a09675c5b8230e97ad08e952eaf5fbb23b7aa034487361edc6678c162a13935c0ca5314304a47f85fca6a9163217ba78fa3bf717&current_page=1' \
+--header 'accept: application/json' \
+--header 'accept-language: en-US,en;q=0.9' \
+--header 'authorization: Bearer 114|LuhhnXez3aq5tl9CGzdBH0NoNLA4HkMg9777vD5Nc5926620' \
+--header 'dnt: 1' \
+--header 'origin: https://www.roomfares.com' \
+--header 'priority: u=1, i' \
+--header 'referer: https://www.roomfares.com/' \
+--header 'sec-ch-ua: "Chromium";v="139", "Not;A=Brand";v="99"' \
+--header 'sec-ch-ua-mobile: ?0' \
+--header 'sec-ch-ua-platform: "macOS"' \
+--header 'sec-fetch-dest: empty' \
+--header 'sec-fetch-mode: cors' \
+--header 'sec-fetch-site: cross-site' \
+--header 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'

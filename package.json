@@ -1,0 +1,40 @@
+{
+  "name": "hotel-availability-flow-testing",
+  "version": "1.0.0",
+  "description": "Framework de testing escalable para validar flujos completos entre APIs de disponibilidad hotelera",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts development",
+    "prod": "ts-node src/index.ts production",
+    "compare": "ts-node src/index.ts compare",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "setup": "chmod +x scripts/*.sh && ./scripts/install-dependencies.sh",
+    "example": "chmod +x scripts/run-example.sh && ./scripts/run-example.sh",
+    "clean": "rm -rf dist reports logs coverage"
+  },
+  "keywords": ["api-testing", "hotel-availability", "e2e-testing", "performance-testing"],
+  "author": "PXSOL Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.5",
+    "winston": "^3.12.0"
+  }
+}
