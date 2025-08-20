@@ -71,11 +71,11 @@ export const validateSearchParams = (params: any): string[] => {
   }
   
   if (!params.start || typeof params.start !== 'string') {
-    errors.push('start date is required and must be a string (DD/MM/YYYY)');
+    errors.push('start date is required and must be a string (YYYY-MM-DD)');
   }
   
   if (!params.end || typeof params.end !== 'string') {
-    errors.push('end date is required and must be a string (DD/MM/YYYY)');
+    errors.push('end date is required and must be a string (YYYY-MM-DD)');
   }
   
   if (!params.location_search || typeof params.location_search !== 'string') {

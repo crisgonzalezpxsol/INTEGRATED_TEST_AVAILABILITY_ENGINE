@@ -46,8 +46,8 @@ describe('testHelper', () => {
       const params = {
         latitude: -34.6,
         longitude: -58.3,
-        start: '01/01/2025',
-        end: '02/01/2025',
+        start: '2025-01-01',
+        end: '2025-01-02',
         location_search: 'Buenos Aires'
       };
 
@@ -60,7 +60,7 @@ describe('testHelper', () => {
         latitude: 'invalid',
         longitude: -58.3,
         start: null,
-        end: '02/01/2025'
+        end: '2025-01-02'
       };
 
       const errors = validateSearchParams(params);

@@ -132,6 +132,46 @@ npm run example
 npm run start help
 ```
 
+### Uso como API REST
+
+El framework también puede ejecutarse como un API REST.
+
+1. Levantar el servidor:
+```bash
+npm run serve-api
+```
+
+2. Endpoint de salud:
+```bash
+GET /health
+```
+
+3. Ejecutar el flujo completo:
+```bash
+GET /api/flow?env=production&latitude=-32.8894587&longitude=-68.8458386&distance_radius=30000&start_days=30&end_days=32&token=Bearer%20TU_TOKEN
+```
+
+o vía POST:
+```http
+POST /api/flow
+Content-Type: application/json
+
+{
+  "env": "production",
+  "latitude": -32.8894587,
+  "longitude": -68.8458386,
+  "distance_radius": 30000,
+  "start_days": 30,
+  "end_days": 32,
+  "token": "Bearer TU_TOKEN"
+}
+```
+
+Notas:
+- Formato de fechas generado: YYYY-MM-DD (por ejemplo 2025-09-11 → 2025-09-13)
+- `token` es opcional. Si se provee, reemplaza `AUTHORIZATION_API_INTEGRATION` del entorno.
+- Respuesta incluye el resultado del test y rutas de reportes.
+
 ### Uso Programático
 
 ```typescript
@@ -147,7 +187,7 @@ const config = {
     longitude: -58.3821215,
     distance_radius: 50000,
     location_search: 'Buenos Aires, Argentina',
-    ...generateTestDates(30, 2) // 30 días desde hoy, 2 noches
+    ...generateTestDates(30, 2) // 30 días desde hoy, 2 noches (YYYY-MM-DD)
   },
   maxHotelsToTest: 5,
   timeout: 30000
