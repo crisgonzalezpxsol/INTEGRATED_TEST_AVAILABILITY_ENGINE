@@ -28,6 +28,7 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
       end,
       start_days,
       end_days,
+      nights,
       location_search,
       token,
       max_hotels_to_test,
@@ -57,9 +58,22 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
       }
       finalStart = startStr;
       finalEnd = endStr;
+    } else if (startStr && !endStr) {
+      if (!ymdRegex.test(startStr)) {
+        return res.status(400).json({ error: 'start must be in YYYY-MM-DD format' });
+      }
+      // Si solo viene start, calcular end usando nights (por defecto 2)
+      const nightsNum = typeof nights === 'string' && !isNaN(Number(nights))
+        ? Number(nights)
+        : (typeof nights === 'number' ? nights : 2);
+      const parsedStart = new Date(startStr + 'T00:00:00');
+      const computedEnd = new Date(parsedStart);
+      computedEnd.setDate(parsedStart.getDate() + (nightsNum > 0 ? nightsNum : 2));
+      finalStart = startStr;
+      finalEnd = formatDateForApi(computedEnd);
     } else {
       if (start_days === undefined || isNaN(Number(start_days))) {
-        return res.status(400).json({ error: 'start is required as YYYY-MM-DD or start_days as number (days from today)' });
+        return res.status(400).json({ error: 'Provide start and end as YYYY-MM-DD, or start_days (and optionally end_days) as numbers' });
       }
       const startOffset = Number(start_days);
       const endOffset = end_days !== undefined && !isNaN(Number(end_days))
