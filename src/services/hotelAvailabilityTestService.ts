@@ -195,7 +195,7 @@ export class HotelAvailabilityTestService {
         search_type: 'lat_lng',
         pos: 'ROOMFARES',
         order_by: 'distance'
-      }, maxHotelsToFetch); // El token se toma automáticamente de process.env.AUTHORIZATION_API_INTEGRATION
+      }, maxHotelsToFetch, this.config.authToken); // Token opcional pasado desde configuración
 
       const endTime = new Date();
       const hotels = result.hotels;

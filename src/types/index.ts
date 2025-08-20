@@ -421,4 +421,9 @@ export interface TestConfig {
   maxHotelsToTest?: number;
   timeout?: number;
   retries?: number;
+  /**
+   * Token de autenticación para API Integration. Si se provee, se usará como
+   * header Authorization (Bearer) en lugar de la variable de entorno.
+   */
+  authToken?: string;
 }

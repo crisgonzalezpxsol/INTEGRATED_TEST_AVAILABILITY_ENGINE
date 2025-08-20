@@ -16,9 +16,15 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "setup": "chmod +x scripts/*.sh && ./scripts/install-dependencies.sh",
     "example": "chmod +x scripts/run-example.sh && ./scripts/run-example.sh",
-    "clean": "rm -rf dist reports logs coverage"
+    "clean": "rm -rf dist reports logs coverage",
+    "serve-api": "ts-node src/server.ts"
   },
-  "keywords": ["api-testing", "hotel-availability", "e2e-testing", "performance-testing"],
+  "keywords": [
+    "api-testing",
+    "hotel-availability",
+    "e2e-testing",
+    "performance-testing"
+  ],
   "author": "PXSOL Development Team",
   "license": "MIT",
   "devDependencies": {
@@ -34,7 +40,9 @@
   },
   "dependencies": {
     "axios": "^1.6.7",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "express": "^5.1.0",
     "winston": "^3.12.0"
   }
 }
