@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { getEnvironment } from './config/environments';
@@ -13,11 +13,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/health', (_req, res) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
 });
 
-const runFlow = async (params: any, res: any) => {
+const runFlow = async (params: Record<string, unknown>, res: Response) => {
   try {
     const {
       env = 'production',
@@ -55,7 +55,10 @@ const runFlow = async (params: any, res: any) => {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + endOffset);
 
-    const environment = getEnvironment(env);
+    const envName = typeof env === 'string' ? env : 'production';
+    const tokenStr = typeof token === 'string' ? token : undefined;
+    const locationName = typeof location_search === 'string' ? location_search : 'API Request';
+    const environment = getEnvironment(envName);
 
     const config = {
       environment,
@@ -65,14 +68,14 @@ const runFlow = async (params: any, res: any) => {
         distance_radius: Number(distance_radius),
         start: formatDateForApi(startDate),
         end: formatDateForApi(endDate),
-        location_search: location_search || 'API Request'
+        location_search: locationName
       },
       maxHotelsToTest: max_hotels_to_test ? Number(max_hotels_to_test) : undefined,
       timeout: timeout ? Number(timeout) : undefined,
-      authToken: token
+      authToken: tokenStr
     };
 
-    logger.info('HTTP API flow request', { env, params: config.searchParams });
+    logger.info('HTTP API flow request', { env: envName, params: config.searchParams });
 
     const testService = new HotelAvailabilityTestService(config);
     const reportingService = new ReportingService();
@@ -97,12 +100,15 @@ const runFlow = async (params: any, res: any) => {
   }
 };
 
-app.post('/api/flow', async (req, res) => {
+app.post('/api/flow', async (req: Request, res: Response) => {
   await runFlow(req.body, res);
 });
 
-app.get('/api/flow', async (req, res) => {
-  const params = Object.fromEntries(Object.entries(req.query).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
+app.get('/api/flow', async (req: Request, res: Response) => {
+  const params = Object.fromEntries(
+    Object.entries(req.query as Record<string, unknown>)
+      .map(([k, v]) => [k, Array.isArray(v) ? (v[0] as unknown) : v])
+  );
   await runFlow(params, res);
 });
 
