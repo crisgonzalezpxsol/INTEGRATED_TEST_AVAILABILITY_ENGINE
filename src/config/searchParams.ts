@@ -42,7 +42,11 @@ export const getSearchParamsFromEnv = (): SearchParams => {
   let start: string;
   let end: string;
 
-  if (process.env.SEARCH_START_DATE && process.env.SEARCH_END_DATE) {
+  if (process.env.SEARCH_START && process.env.SEARCH_END) {
+    // Usar fechas absolutas (YYYY-MM-DD)
+    start = process.env.SEARCH_START;
+    end = process.env.SEARCH_END;
+  } else if (process.env.SEARCH_START_DATE && process.env.SEARCH_END_DATE) {
     // Usar días relativos desde hoy
     const startDays = parseInt(process.env.SEARCH_START_DATE);
     const endDays = parseInt(process.env.SEARCH_END_DATE);

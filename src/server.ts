@@ -24,6 +24,8 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
       latitude,
       longitude,
       distance_radius,
+      start,
+      end,
       start_days,
       end_days,
       location_search,
@@ -41,19 +43,36 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
     if (distance_radius === undefined || isNaN(Number(distance_radius))) {
       return res.status(400).json({ error: 'distance_radius is required and must be a number' });
     }
-    if (start_days === undefined || isNaN(Number(start_days))) {
-      return res.status(400).json({ error: 'start_days is required and must be a number (days from today)' });
+    const startStr = typeof start === 'string' ? start : undefined;
+    const endStr = typeof end === 'string' ? end : undefined;
+
+    // Validar fechas: si vienen start/end (YYYY-MM-DD), usarlas; si no, usar offsets
+    const ymdRegex = /^\d{4}-\d{2}-\d{2}$/;
+    let finalStart: string;
+    let finalEnd: string;
+
+    if (startStr && endStr) {
+      if (!ymdRegex.test(startStr) || !ymdRegex.test(endStr)) {
+        return res.status(400).json({ error: 'start and end must be in YYYY-MM-DD format' });
+      }
+      finalStart = startStr;
+      finalEnd = endStr;
+    } else {
+      if (start_days === undefined || isNaN(Number(start_days))) {
+        return res.status(400).json({ error: 'start is required as YYYY-MM-DD or start_days as number (days from today)' });
+      }
+      const startOffset = Number(start_days);
+      const endOffset = end_days !== undefined && !isNaN(Number(end_days))
+        ? Number(end_days)
+        : startOffset + 2;
+
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() + startOffset);
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + endOffset);
+      finalStart = formatDateForApi(startDate);
+      finalEnd = formatDateForApi(endDate);
     }
-
-    const startOffset = Number(start_days);
-    const endOffset = end_days !== undefined && !isNaN(Number(end_days))
-      ? Number(end_days)
-      : startOffset + 2;
-
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() + startOffset);
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + endOffset);
 
     const envName = typeof env === 'string' ? env : 'production';
     const tokenStr = typeof token === 'string' ? token : undefined;
@@ -66,8 +85,8 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
         latitude: Number(latitude),
         longitude: Number(longitude),
         distance_radius: Number(distance_radius),
-        start: formatDateForApi(startDate),
-        end: formatDateForApi(endDate),
+        start: finalStart,
+        end: finalEnd,
         location_search: locationName
       },
       maxHotelsToTest: max_hotels_to_test ? Number(max_hotels_to_test) : undefined,

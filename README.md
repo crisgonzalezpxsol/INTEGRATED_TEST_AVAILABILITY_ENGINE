@@ -161,13 +161,16 @@ Content-Type: application/json
   "latitude": -32.8894587,
   "longitude": -68.8458386,
   "distance_radius": 30000,
-  "start_days": 30,
-  "end_days": 32,
+  "start": "2025-09-11",
+  "end": "2025-09-13",
   "token": "Bearer TU_TOKEN"
 }
 ```
 
 Notas:
+- Puedes enviar fechas como:
+  - start y end en formato YYYY-MM-DD (recomendado)
+  - o alternativamente start_days y end_days (días desde hoy) si prefieres offsets
 - Formato de fechas generado: YYYY-MM-DD (por ejemplo 2025-09-11 → 2025-09-13)
 - `token` es opcional. Si se provee, reemplaza `AUTHORIZATION_API_INTEGRATION` del entorno.
 - Respuesta incluye el resultado del test y rutas de reportes.
