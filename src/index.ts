@@ -129,6 +129,10 @@ async function main(): Promise<void> {
   const command = args[0];
 
   switch (command) {
+    case 'server':
+      // Ejecutar el servidor HTTP explícitamente
+      await import('./server');
+      break;
     case 'dev':
     case 'development':
       await runSingleTest('development');
@@ -182,6 +186,11 @@ Parámetros de Búsqueda Configurables:
       break;
       
     default:
+      // Si no hay comando y estamos en un entorno con PORT (Render/Heroku), iniciar el servidor HTTP
+      if (!command && process.env.PORT) {
+        await import('./server');
+        break;
+      }
       console.log(`❌ Comando desconocido: ${command || 'ninguno'}`);
       console.log('Usa "npm run start help" para ver los comandos disponibles');
       process.exit(1);
