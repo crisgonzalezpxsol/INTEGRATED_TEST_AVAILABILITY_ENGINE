@@ -149,12 +149,16 @@ export class Api1Client {
     (config as any).startTime = startTime;
 
     try {
+      const fullUrl = `${this.client.defaults.baseURL}/query/list6?${queryParams.toString()}`;
+      console.log(`🔗 List6 URL: ${fullUrl}`);
+      
       const response = await this.client.get<QueryList6Response>(`/query/list6?${queryParams.toString()}`, config);
       
       logger.info('Query List6 Success', {
         productId: params.ProductID,
         skuCount: response.data.ProductList?.[0]?.SkuList?.length || 0,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
+        url: fullUrl
       });
 
       return response.data;

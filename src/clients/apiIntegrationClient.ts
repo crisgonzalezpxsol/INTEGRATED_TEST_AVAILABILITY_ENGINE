@@ -90,6 +90,9 @@ export class ApiIntegrationClient {
     (config as any).startTime = startTime;
 
     try {
+      const fullUrl = `${this.baseUrl}/v2/hotels/availability?${queryParams.toString()}`;
+      console.log(`🔗 Hotels/Availability URL: ${fullUrl}`);
+      
       const response = await this.client.get<HotelsAvailabilityResponse>(`/v2/hotels/availability?${queryParams.toString()}`, config);
       
       const hotelsCount = response.data.data?.hotels?.length || 0;
@@ -99,7 +102,8 @@ export class ApiIntegrationClient {
         searchDefinitionId: params.search_definition_id,
         hotelsCount,
         availableHotelsCount,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
+        url: fullUrl
       });
 
       return response.data;
