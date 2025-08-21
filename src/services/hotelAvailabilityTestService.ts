@@ -195,7 +195,7 @@ export class HotelAvailabilityTestService {
         search_type: 'lat_lng',
         pos: 'ROOMFARES',
         order_by: 'distance'
-      }, maxHotelsToFetch, this.config.authToken); // Token opcional pasado desde configuración
+      }, maxHotelsToFetch, this.config.authToken); // Token opcional
 
       const endTime = new Date();
       const hotels = result.hotels;
@@ -236,50 +236,62 @@ export class HotelAvailabilityTestService {
    * Ejecuta el paso 3: Query List6 para múltiples hoteles
    */
   private async executeQueryList6ForHotels(searchId: number, hotels: Hotel[]) {
-    const results = [];
+    const results: any[] = [];
+    const concurrencyLimit = this.config.concurrency || (process.env.CONCURRENT_REQUESTS ? parseInt(process.env.CONCURRENT_REQUESTS) : 5);
 
-    for (const hotel of hotels) {
-      const startTime = new Date();
-      
-      try {
-        const response = await this.api1Client.queryList6({
-          search: 'OK',
-          pos: 'ROOMFARES',
-          lng: 'en',
-          SearchID: searchId,
-          ProductID: hotel.hotel_id,
-          Sku: 1,
-          Currency: 'USD',
-          Email: 'NN',
-          Tag: 'PmsLink',
-          order_rooms: 'recommended'
-        });
+    let currentIndex = 0;
 
-        const endTime = new Date();
-        const skus = response.ProductList[0]?.SkuList || [];
-        const { availableSkus, availableRates } = countAvailableSkus(skus);
+    const worker = async () => {
+      while (true) {
+        const index = currentIndex++;
+        if (index >= hotels.length) break;
 
-        results.push({
-          hotelId: hotel.hotel_id,
-          hotelName: hotel.name,
-          success: true,
-          duration: calculateDuration(startTime, endTime),
-          skuCount: skus.length,
-          availableSkuCount: availableSkus,
-          availableRatesCount: availableRates
-        });
+        const hotel = hotels[index];
+        const startTime = new Date();
+        try {
+          const response = await this.api1Client.queryList6({
+            search: 'OK',
+            pos: 'ROOMFARES',
+            lng: 'en',
+            SearchID: searchId,
+            ProductID: hotel.hotel_id,
+            Sku: 1,
+            Currency: 'USD',
+            Email: 'NN',
+            Tag: 'PmsLink',
+            order_rooms: 'recommended'
+          });
 
-      } catch (error) {
-        const endTime = new Date();
-        results.push({
-          hotelId: hotel.hotel_id,
-          hotelName: hotel.name,
-          success: false,
-          duration: calculateDuration(startTime, endTime),
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
+          const endTime = new Date();
+          const skus = response.ProductList[0]?.SkuList || [];
+          const { availableSkus, availableRates } = countAvailableSkus(skus);
+
+          results.push({
+            hotelId: hotel.hotel_id,
+            hotelName: hotel.name,
+            success: true,
+            duration: calculateDuration(startTime, endTime),
+            skuCount: skus.length,
+            availableSkuCount: availableSkus,
+            availableRatesCount: availableRates
+          });
+
+        } catch (error) {
+          const endTime = new Date();
+          results.push({
+            hotelId: hotel.hotel_id,
+            hotelName: hotel.name,
+            success: false,
+            duration: calculateDuration(startTime, endTime),
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
       }
-    }
+    };
+
+    const workersCount = Math.min(concurrencyLimit, hotels.length);
+    const workers = Array.from({ length: workersCount }, () => worker());
+    await Promise.all(workers);
 
     return results;
   }

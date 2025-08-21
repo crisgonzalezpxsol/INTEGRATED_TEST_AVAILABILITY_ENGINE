@@ -153,13 +153,8 @@ export class ApiIntegrationClient {
         currentPage++;
 
         // Verificar límites de parada
-        const maxPagesToScan = process.env.MAX_PAGES_TO_SCAN ? parseInt(process.env.MAX_PAGES_TO_SCAN) : 10;
-        
-        // Parar si ya tenemos suficientes hoteles, llegamos a la última página, o al límite de páginas
-        if (allHotels.length >= maxHotels || currentPage > totalPages || currentPage > maxPagesToScan) {
-          if (currentPage > maxPagesToScan) {
-            logger.info('Stopped due to max pages limit', { maxPagesToScan, currentPage });
-          }
+        // Parar si ya tenemos suficientes hoteles o llegamos a la última página
+        if (allHotels.length >= maxHotels || currentPage > totalPages) {
           break;
         }
 

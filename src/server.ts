@@ -29,6 +29,7 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
       start_days,
       end_days,
       nights,
+      concurrency,
       location_search,
       token,
       max_hotels_to_test,
@@ -105,7 +106,8 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
       },
       maxHotelsToTest: max_hotels_to_test ? Number(max_hotels_to_test) : undefined,
       timeout: timeout ? Number(timeout) : undefined,
-      authToken: tokenStr
+      authToken: tokenStr,
+      concurrency: typeof concurrency === 'string' && !isNaN(Number(concurrency)) ? Number(concurrency) : (typeof concurrency === 'number' ? concurrency : undefined)
     };
 
     logger.info('HTTP API flow request', { env: envName, params: config.searchParams });

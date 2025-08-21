@@ -97,7 +97,6 @@ SEARCH_END_DATE=32
 DEFAULT_TIMEOUT=30000
 MAX_RETRIES=3
 MAX_HOTELS_TO_TEST=5
-MAX_PAGES_TO_SCAN=10
 CONCURRENT_REQUESTS=5
 
 # Logging
@@ -108,7 +107,7 @@ LOG_FILE=logs/test-results.log
 **Importante**: 
 - El token `AUTHORIZATION_API_INTEGRATION` es requerido para acceder a la API Integration
 - `MAX_HOTELS_TO_TEST` controla cuántos hoteles se testean (por defecto 5 para rapidez)
-- `MAX_PAGES_TO_SCAN` limita cuántas páginas de la API Integration escanear (por defecto 10)
+- `CONCURRENT_REQUESTS` controla el paralelismo de Query List6 (por defecto 5)
 - Los parámetros `SEARCH_*` permiten configurar la ubicación y fechas de búsqueda dinámicamente
 
 ## 🎯 Uso

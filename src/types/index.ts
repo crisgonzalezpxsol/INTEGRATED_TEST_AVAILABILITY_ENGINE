@@ -426,4 +426,8 @@ export interface TestConfig {
    * header Authorization (Bearer) en lugar de la variable de entorno.
    */
   authToken?: string;
+  /**
+   * Cantidad de requests simultáneos para acelerar Query List6
+   */
+  concurrency?: number;
 }
