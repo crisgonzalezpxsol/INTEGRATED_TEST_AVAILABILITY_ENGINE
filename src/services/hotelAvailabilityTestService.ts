@@ -170,12 +170,13 @@ export class HotelAvailabilityTestService {
       const hotels = availability.data.hotels || [];
       allHotels.push(...hotels);
 
+      // Testear TODOS los hoteles en List6 (no solo los que marcan disponibilidad supuesta)
       const hotelsWithAvail = filterHotelsWithAvailability(hotels);
-      let hotelsForThisPage = hotelsWithAvail;
+      let hotelsForThisPage = hotels;
       if (typeof maxToTest === 'number') {
         const remaining = maxToTest - testedCount;
         if (remaining <= 0) break;
-        hotelsForThisPage = hotelsWithAvail.slice(0, remaining);
+        hotelsForThisPage = hotels.slice(0, remaining);
       }
 
       if (hotelsForThisPage.length > 0) {
@@ -370,35 +371,58 @@ export class HotelAvailabilityTestService {
     const successfullyTestedHotels = queryList6Results.filter(result => result.success);
     
     // Hoteles con disponibilidad real (de los testeados exitosamente)
-    const hotelsWithRealAvailability = successfullyTestedHotels.filter(result => 
-      result.availableRatesCount && result.availableRatesCount > 0
+    const hotelsWithRealAvailability = successfullyTestedHotels.filter(result =>
+      (result.availableRatesCount || 0) > 0
     ).length;
 
     const discrepancies = [];
 
-    // Analizar discrepancias solo en los hoteles que fueron testeados exitosamente
+    // Matriz de confusión
+    let truePositives = 0;
+    let trueNegatives = 0;
+    let falsePositives = 0;
+    let falseNegatives = 0;
+
+    // Analizar discrepancias en los hoteles testeados exitosamente
     for (const queryResult of successfullyTestedHotels) {
-      const hotel = hotelsWithSupposedAvailability.find(h => h.hotel_id === queryResult.hotelId);
-      
-      if (hotel) {
-        const hasRealAvail = queryResult.availableRatesCount > 0;
-        
-        if (hotel.availability > 0 && !hasRealAvail) {
-          // Falso positivo: supuesta disponibilidad pero sin disponibilidad real
-          discrepancies.push({
-            hotelId: hotel.hotel_id,
-            hotelName: hotel.name,
-            supposedAvailability: hotel.availability,
-            realAvailability: false,
-            availableRates: queryResult.availableRatesCount || 0
-          });
-        }
+      const hotel = allHotels.find(h => h.hotel_id === queryResult.hotelId);
+      if (!hotel) continue;
+
+      const hasRealAvail = (queryResult.availableRatesCount || 0) > 0;
+      const supposedAvail = hotel.availability || 0;
+
+      if (supposedAvail > 0 && hasRealAvail) truePositives++;
+      if (supposedAvail === 0 && !hasRealAvail) trueNegatives++;
+      if (supposedAvail > 0 && !hasRealAvail) falsePositives++;
+      if (supposedAvail === 0 && hasRealAvail) falseNegatives++;
+
+      // Falso positivo: supuesta disponibilidad pero sin disponibilidad real
+      if (supposedAvail > 0 && !hasRealAvail) {
+        discrepancies.push({
+          hotelId: hotel.hotel_id,
+          hotelName: hotel.name,
+          supposedAvailability: supposedAvail,
+          realAvailability: false,
+          availableRates: queryResult.availableRatesCount || 0
+        });
+      }
+
+      // Falso negativo: sin disponibilidad supuesta pero con disponibilidad real
+      if (supposedAvail === 0 && hasRealAvail) {
+        discrepancies.push({
+          hotelId: hotel.hotel_id,
+          hotelName: hotel.name,
+          supposedAvailability: supposedAvail,
+          realAvailability: true,
+          availableRates: queryResult.availableRatesCount || 0
+        });
       }
     }
 
-    // Calcular precisión: hoteles con disponibilidad real / hoteles testeados exitosamente
-    const accuracyPercentage = successfullyTestedHotels.length > 0 
-      ? Math.round((hotelsWithRealAvailability / successfullyTestedHotels.length) * 100)
+    // Calcular precisión: (TP + TN) / total testeado
+    const totalTested = successfullyTestedHotels.length;
+    const accuracyPercentage = totalTested > 0
+      ? Math.round(((truePositives + trueNegatives) / totalTested) * 100)
       : 0;
 
     return {
