@@ -80,40 +80,32 @@ export class HotelAvailabilityTestService {
         throw new Error('Search Insert failed, cannot continue with the flow');
       }
 
-      // Paso 2: Hotels Availability
-      const hotelsAvailabilityResult = await this.executeHotelsAvailability(searchInsertResult.searchId);
-      result.hotelsAvailability = hotelsAvailabilityResult;
+      // Paso 2 y 3 paginados: Hotels Availability por página + Query List6 por página
+      const paged = await this.executePagedFlow(searchInsertResult.searchId);
 
-      if (!hotelsAvailabilityResult.success || !hotelsAvailabilityResult.hotels) {
-        throw new Error('Hotels Availability failed, cannot continue with the flow');
-      }
+      // Armar sección hotelsAvailability con agregados
+      result.hotelsAvailability = {
+        success: true,
+        duration: paged.duration,
+        hotelsCount: paged.allHotels.length,
+        availableHotelsCount: paged.availableHotelsCount,
+        hotels: paged.allHotels,
+        paginationInfo: {
+          totalPages: paged.totalPages,
+          totalHotelsAvailable: paged.totalHotels,
+          hotelsCollected: paged.allHotels.length
+        }
+      } as any;
 
-      // Filtrar hoteles con disponibilidad supuesta
-      const hotelsWithSupposedAvailability = filterHotelsWithAvailability(hotelsAvailabilityResult.hotels);
-      
-      // Limitar el número de hoteles a testear si está configurado
-      const hotelsToTest = this.config.maxHotelsToTest 
-        ? hotelsWithSupposedAvailability.slice(0, this.config.maxHotelsToTest)
-        : hotelsWithSupposedAvailability;
+      result.queryList6Results = paged.queryList6Results;
 
-      logger.info('Hotels to test', {
-        totalHotels: hotelsAvailabilityResult.hotels.length,
-        hotelsWithSupposedAvailability: hotelsWithSupposedAvailability.length,
-        hotelsToTest: hotelsToTest.length
-      });
-
-      // Paso 3: Query List6 para cada hotel con disponibilidad supuesta
-      const queryList6Results = await this.executeQueryList6ForHotels(
-        searchInsertResult.searchId,
-        hotelsToTest
-      );
-      result.queryList6Results = queryList6Results;
+      const hotelsWithSupposedAvailability = filterHotelsWithAvailability(paged.allHotels);
 
       // Paso 4: Análisis y comparación
       result.comparison = this.analyzeResults(
-        hotelsAvailabilityResult.hotels,
+        paged.allHotels,
         hotelsWithSupposedAvailability,
-        queryList6Results
+        paged.queryList6Results
       );
 
       const endTime = new Date();
@@ -140,6 +132,78 @@ export class HotelAvailabilityTestService {
 
       throw error;
     }
+  }
+
+  /**
+   * Ejecuta availability paginado y corre list6 por página, acumulando resultados
+   */
+  private async executePagedFlow(searchId: number): Promise<{
+    duration: number;
+    allHotels: Hotel[];
+    queryList6Results: any[];
+    totalPages: number;
+    totalHotels: number;
+    availableHotelsCount: number;
+  }> {
+    const startTime = new Date();
+    const allHotels: Hotel[] = [];
+    const queryList6Results: any[] = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalHotels = 0;
+    let testedCount = 0;
+    const maxToTest = this.config.maxHotelsToTest;
+
+    do {
+      const availability = await this.apiIntegrationClient.getHotelsAvailability({
+        search_definition_id: searchId,
+        currency: 'USD',
+        lat: this.config.searchParams.latitude,
+        lng: this.config.searchParams.longitude,
+        distance_radius: this.config.searchParams.distance_radius,
+        search_type: 'lat_lng',
+        pos: 'ROOMFARES',
+        order_by: 'distance',
+        current_page: currentPage
+      }, this.config.authToken);
+
+      const hotels = availability.data.hotels || [];
+      allHotels.push(...hotels);
+
+      const hotelsWithAvail = filterHotelsWithAvailability(hotels);
+      let hotelsForThisPage = hotelsWithAvail;
+      if (typeof maxToTest === 'number') {
+        const remaining = maxToTest - testedCount;
+        if (remaining <= 0) break;
+        hotelsForThisPage = hotelsWithAvail.slice(0, remaining);
+      }
+
+      if (hotelsForThisPage.length > 0) {
+        const pageResults = await this.executeQueryList6ForHotels(searchId, hotelsForThisPage);
+        queryList6Results.push(...pageResults);
+        testedCount += hotelsForThisPage.length;
+      }
+
+      totalPages = availability.meta.total_pages;
+      totalHotels = availability.meta.total_hotels;
+      currentPage++;
+
+      if (typeof maxToTest === 'number' && testedCount >= maxToTest) {
+        break;
+      }
+    } while (currentPage <= totalPages);
+
+    const endTime = new Date();
+    const availableHotelsCount = allHotels.filter(h => h.availability > 0).length;
+
+    return {
+      duration: calculateDuration(startTime, endTime),
+      allHotels,
+      queryList6Results,
+      totalPages,
+      totalHotels,
+      availableHotelsCount
+    };
   }
 
   /**
@@ -182,9 +246,11 @@ export class HotelAvailabilityTestService {
     const startTime = new Date();
     
     try {
-      // Calcular cuántos hoteles necesitamos obtener de la API
-      // Obtenemos más hoteles de los que vamos a testear para tener mejor selección
-      const maxHotelsToFetch = Math.max((this.config.maxHotelsToTest || 5) * 3, 100);
+      // Calcular cuántos hoteles obtener de la API
+      // Si maxHotelsToTest no está definido, obtener todos los hoteles disponibles (sin tope)
+      const maxHotelsToFetch = this.config.maxHotelsToTest !== undefined
+        ? Math.max((this.config.maxHotelsToTest || 0) * 3, 100)
+        : Number.MAX_SAFE_INTEGER;
       
       const result = await this.apiIntegrationClient.getHotelsFromMultiplePages({
         search_definition_id: searchId,

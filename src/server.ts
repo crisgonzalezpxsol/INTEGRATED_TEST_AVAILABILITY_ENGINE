@@ -117,12 +117,18 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
 
     const result = await testService.runCompleteFlowTest();
 
+    // Construir respuesta ligera (sin hotels array completo)
+    const { hotelsAvailability, ...rest } = result;
+    const lightHotelsAvailability = hotelsAvailability && hotelsAvailability.hotels
+      ? { ...hotelsAvailability, hotels: undefined }
+      : hotelsAvailability;
+
     const jsonPath = await reportingService.saveTestResult(result);
     const textPath = await reportingService.generateTextReport(result);
 
     res.json({
       ok: true,
-      result,
+      result: { ...rest, hotelsAvailability: lightHotelsAvailability },
       reports: {
         json: jsonPath,
         text: textPath
