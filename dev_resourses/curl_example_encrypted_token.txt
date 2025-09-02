@@ -1,0 +1,30 @@
+# Ejemplo de uso con token encriptado
+# 
+# Este ejemplo muestra cómo enviar un token encriptado al endpoint /api/flow
+# El servidor automáticamente desencripta el token y agrega el prefijo "Bearer"
+
+# Token original: "114|LuhhnXez3aq5tl9CGzdBH0NoNLA4HkMg9777vD5Nc5926620"
+# Token encriptado (ejemplo): "B8/SO47dxUqB++GgdV6k5M3qwmj8mlcGw/ruCDIIStPqy5hVGbA+vHbHdYn8+HA7ocpN+pLOIZotpYdzJoO0kpz8gddo6xAPI8AUMfJjl9o="
+
+curl --location 'http://localhost:3000/api/flow' \
+--header 'Content-Type: application/json' \
+--data '{
+    "env": "production",
+    "latitude": -32.888355,
+    "longitude": -68.838844,
+    "distance_radius": 5000,
+    "start": "2025-09-27",
+    "end": "2025-09-28",
+    "concurrency": 10,
+    "max_pages_to_scan": 5,
+    "token": "B8/SO47dxUqB++GgdV6k5M3qwmj8mlcGw/ruCDIIStPqy5hVGbA+vHbHdYn8+HA7ocpN+pLOIZotpYdzJoO0kpz8gddo6xAPI8AUMfJjl9o="
+}'
+
+# Alternativamente, usando GET con query parameters:
+curl --location 'http://localhost:3000/api/flow?env=production&latitude=-32.888355&longitude=-68.838844&distance_radius=5000&start=2025-09-27&end=2025-09-28&concurrency=10&max_pages_to_scan=5&token=B8/SO47dxUqB++GgdV6k5M3qwmj8mlcGw/ruCDIIStPqy5hVGbA+vHbHdYn8+HA7ocpN+pLOIZotpYdzJoO0kpz8gddo6xAPI8AUMfJjl9o='
+
+# El servidor automáticamente:
+# 1. Desencripta el token usando AES-256-CBC
+# 2. Agrega el prefijo "Bearer" si no está presente
+# 3. Usa el token desencriptado para autenticar las llamadas a las APIs
+# 4. Registra en los logs el estado de la desencriptación

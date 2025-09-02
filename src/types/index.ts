@@ -430,4 +430,9 @@ export interface TestConfig {
    * Cantidad de requests simultáneos para acelerar Query List6
    */
   concurrency?: number;
+  /**
+   * Posición/Partner para las consultas (ej: ROOMFARES, BOOKING, etc.)
+   * Por defecto: ROOMFARES
+   */
+  pos?: string;
 }

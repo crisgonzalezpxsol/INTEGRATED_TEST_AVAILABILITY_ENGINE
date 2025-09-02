@@ -15,9 +15,11 @@ export class HotelAvailabilityTestService {
   private api1Client: Api1Client;
   private apiIntegrationClient: ApiIntegrationClient;
   private config: TestConfig;
+  private pos: string;
 
   constructor(config: TestConfig) {
     this.config = config;
+    this.pos = config.pos || 'ROOMFARES'; // Valor por defecto
     this.api1Client = new Api1Client(
       config.environment.api1BaseUrl,
       config.timeout || 30000
@@ -26,6 +28,11 @@ export class HotelAvailabilityTestService {
       config.environment.apiIntegrationBaseUrl,
       config.timeout || 30000
     );
+    
+    logger.info('HotelAvailabilityTestService initialized', { 
+      pos: this.pos,
+      environment: config.environment.name 
+    });
   }
 
   /**
@@ -162,7 +169,7 @@ export class HotelAvailabilityTestService {
         lng: this.config.searchParams.longitude,
         distance_radius: this.config.searchParams.distance_radius,
         search_type: 'lat_lng',
-        pos: 'ROOMFARES',
+        pos: this.pos,
         order_by: 'distance',
         current_page: currentPage
       }, this.config.authToken);
@@ -260,7 +267,7 @@ export class HotelAvailabilityTestService {
         lng: this.config.searchParams.longitude,
         distance_radius: this.config.searchParams.distance_radius,
         search_type: 'lat_lng',
-        pos: 'ROOMFARES',
+        pos: this.pos,
         order_by: 'distance'
       }, maxHotelsToFetch, this.config.authToken); // Token opcional
 
@@ -318,7 +325,7 @@ export class HotelAvailabilityTestService {
         try {
           const response = await this.api1Client.queryList6({
             search: 'OK',
-            pos: 'ROOMFARES',
+            pos: this.pos,
             lng: 'en',
             SearchID: searchId,
             ProductID: hotel.hotel_id,

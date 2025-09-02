@@ -1,0 +1,36 @@
+# Ejemplo de uso con parámetro pos dinámico
+# 
+# Este ejemplo muestra cómo usar el parámetro 'pos' para especificar el partner/posición
+# en las consultas a search/insert, hotels/availability y query/list6
+
+# Ejemplo 1: Usando ROOMFARES (valor por defecto)
+curl --location 'http://localhost:3000/api/flow?env=production&latitude=-32.888355&longitude=-68.838844&distance_radius=5000&start=2025-09-27&end=2025-09-28&concurrency=10&max_pages_to_scan=5&pos=ROOMFARES&token=xR46AQl6z6zZBaNQnvsufKw4yJc5qkPGUaeSfyKzVSNVVL1INAR6ornGcnx6FR%2FHzPb6Y7GmPBQrk5RaUkuXJWda4%2FLy0rTicFt7mDG2m9c%3D'
+
+# Ejemplo 2: Usando BOOKING (sin especificar pos, usa ROOMFARES por defecto)
+curl --location 'http://localhost:3000/api/flow?env=production&latitude=-32.888355&longitude=-68.838844&distance_radius=5000&start=2025-09-27&end=2025-09-28&concurrency=10&max_pages_to_scan=5&token=xR46AQl6z6zZBaNQnvsufKw4yJc5qkPGUaeSfyKzVSNVVL1INAR6ornGcnx6FR%2FHzPb6Y7GmPBQrk5RaUkuXJWda4%2FLy0rTicFt7mDG2m9c%3D'
+
+# Ejemplo 3: Usando POST con JSON
+curl --location 'http://localhost:3000/api/flow' \
+--header 'Content-Type: application/json' \
+--data '{
+    "env": "production",
+    "latitude": -32.888355,
+    "longitude": -68.838844,
+    "distance_radius": 5000,
+    "start": "2025-09-27",
+    "end": "2025-09-28",
+    "concurrency": 10,
+    "max_pages_to_scan": 5,
+    "pos": "BOOKING",
+    "token": "xR46AQl6z6zZBaNQnvsufKw4yJc5qkPGUaeSfyKzVSNVVL1INAR6ornGcnx6FR/HzPb6Y7GmPBQrk5RaUkuXJWda4/Ly0rTicFt7mDG2m9c="
+}'
+
+# Ejemplo 4: Usando otro partner (ej: EXPEDIA)
+curl --location 'http://localhost:3000/api/flow?env=production&latitude=-32.888355&longitude=-68.838844&distance_radius=5000&start=2025-09-27&end=2025-09-28&concurrency=10&max_pages_to_scan=5&pos=EXPEDIA&token=xR46AQl6z6zZBaNQnvsufKw4yJc5qkPGUaeSfyKzVSNVVL1INAR6ornGcnx6FR%2FHzPb6Y7GmPBQrk5RaUkuXJWda4%2FLy0rTicFt7mDG2m9c%3D'
+
+# El parámetro 'pos' se aplica a todas las consultas:
+# 1. search/insert: se pasa como parámetro 'Pos'
+# 2. hotels/availability: se pasa como parámetro 'pos'  
+# 3. query/list6: se pasa como parámetro 'pos'
+#
+# Si no se especifica 'pos', se usa 'ROOMFARES' por defecto

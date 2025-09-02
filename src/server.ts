@@ -5,6 +5,7 @@ import { getEnvironment } from './config/environments';
 import { HotelAvailabilityTestService } from './services/hotelAvailabilityTestService';
 import { ReportingService } from './services/reportingService';
 import { formatDateForApi } from './utils/dateHelper';
+import { decryptToken } from './utils/encryption';
 import logger from './config/logger';
 
 dotenv.config();
@@ -33,7 +34,8 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
       location_search,
       token,
       max_hotels_to_test,
-      timeout
+      timeout,
+      pos = 'ROOMFARES'
     } = params || {};
 
     if (latitude === undefined || isNaN(Number(latitude))) {
@@ -90,10 +92,25 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
     }
 
     const envName = typeof env === 'string' ? env : 'production';
-    const tokenStr = typeof token === 'string' ? token : undefined;
+    const rawToken = typeof token === 'string' ? token : undefined;
+    const tokenStr = rawToken ? decryptToken(rawToken) : undefined;
     const locationName = typeof location_search === 'string' ? location_search : 'API Request';
     const environment = getEnvironment(envName);
 
+    // Log token decryption status
+    if (rawToken && tokenStr !== rawToken) {
+      logger.info('Token successfully decrypted', { 
+        originalLength: rawToken.length, 
+        decryptedLength: tokenStr?.length 
+      });
+    } else if (rawToken) {
+      logger.info('Token used as-is (not encrypted or decryption failed)', { 
+        tokenLength: rawToken.length 
+      });
+    }
+
+    const posStr = typeof pos === 'string' ? pos : 'ROOMFARES';
+    
     const config = {
       environment,
       searchParams: {
@@ -107,10 +124,15 @@ const runFlow = async (params: Record<string, unknown>, res: Response) => {
       maxHotelsToTest: max_hotels_to_test ? Number(max_hotels_to_test) : undefined,
       timeout: timeout ? Number(timeout) : undefined,
       authToken: tokenStr,
-      concurrency: typeof concurrency === 'string' && !isNaN(Number(concurrency)) ? Number(concurrency) : (typeof concurrency === 'number' ? concurrency : undefined)
+      concurrency: typeof concurrency === 'string' && !isNaN(Number(concurrency)) ? Number(concurrency) : (typeof concurrency === 'number' ? concurrency : undefined),
+      pos: posStr
     };
 
-    logger.info('HTTP API flow request', { env: envName, params: config.searchParams });
+    logger.info('HTTP API flow request', { 
+      env: envName, 
+      params: config.searchParams,
+      pos: posStr 
+    });
 
     const testService = new HotelAvailabilityTestService(config);
     const reportingService = new ReportingService();

@@ -107,6 +107,33 @@ LOG_FILE=logs/test-results.log
 **Importante**: 
 - El token `AUTHORIZATION_API_INTEGRATION` es requerido para acceder a la API Integration
 - `MAX_HOTELS_TO_TEST` controla cuántos hoteles se testean (por defecto 5 para rapidez)
+
+## 🔐 Encriptación de Tokens
+
+El sistema soporta encriptación automática de tokens para mayor seguridad. Los tokens pueden enviarse encriptados desde el cliente PHP y se desencriptan automáticamente en el servidor Node.js.
+
+### Características
+
+- **Algoritmo**: AES-256-CBC (compatible con PHP OpenSSL)
+- **Desencriptación automática**: Los tokens se desencriptan automáticamente en el servidor
+- **Prefijo Bearer**: Manejo automático del prefijo "Bearer" para compatibilidad con APIs
+- **Fallback seguro**: Si la desencriptación falla, usa el token tal como se recibió
+
+### Uso
+
+```bash
+# Enviar token encriptado
+curl --location 'http://localhost:3000/api/flow?token=TOKEN_ENCRIPTADO_EN_BASE64'
+
+# El servidor automáticamente desencripta y agrega el prefijo Bearer
+# Resultado interno: "Bearer 114|LuhhnXez3aq5tl9CGzdBH0NoNLA4HkMg9777vD5Nc5926620"
+```
+
+### Compatibilidad con PHP
+
+El sistema es totalmente compatible con las funciones PHP `encrypt_sha256()` y `decrypt_sha256()` usando la misma clave secreta.
+
+**Documentación completa**: Ver [Guía de Encriptación](docs/ENCRYPTION_GUIDE.md)
 - `CONCURRENT_REQUESTS` controla el paralelismo de Query List6 (por defecto 5)
 - Los parámetros `SEARCH_*` permiten configurar la ubicación y fechas de búsqueda dinámicamente
 
@@ -147,7 +174,7 @@ GET /health
 
 3. Ejecutar el flujo completo:
 ```bash
-GET /api/flow?env=production&latitude=-32.8894587&longitude=-68.8458386&distance_radius=30000&start_days=30&end_days=32&token=Bearer%20TU_TOKEN
+GET /api/flow?env=production&latitude=-32.8894587&longitude=-68.8458386&distance_radius=30000&start_days=30&end_days=32&pos=ROOMFARES&token=Bearer%20TU_TOKEN
 ```
 
 o vía POST:
@@ -162,16 +189,31 @@ Content-Type: application/json
   "distance_radius": 30000,
   "start": "2025-09-11",
   "end": "2025-09-13",
+  "pos": "ROOMFARES",
   "token": "Bearer TU_TOKEN"
 }
 ```
 
-Notas:
+**Parámetros disponibles:**
+- `env`: Entorno (development/production) - **requerido**
+- `latitude`: Latitud - **requerido**
+- `longitude`: Longitud - **requerido** 
+- `distance_radius`: Radio de búsqueda en metros - **requerido**
+- `start`/`end`: Fechas en formato YYYY-MM-DD (recomendado)
+- `start_days`/`end_days`: Días desde hoy (alternativa a start/end)
+- `pos`: Partner/posición para las consultas (ej: ROOMFARES, BOOKING, EXPEDIA) - **opcional, por defecto: ROOMFARES**
+- `token`: Token de autenticación (puede estar encriptado) - **opcional**
+- `concurrency`: Número de requests simultáneos - **opcional**
+- `max_pages_to_scan`: Máximo de páginas a escanear - **opcional**
+- `max_hotels_to_test`: Máximo de hoteles a testear - **opcional**
+
+**Notas:**
 - Puedes enviar fechas como:
   - start y end en formato YYYY-MM-DD (recomendado)
   - o alternativamente start_days y end_days (días desde hoy) si prefieres offsets
 - Formato de fechas generado: YYYY-MM-DD (por ejemplo 2025-09-11 → 2025-09-13)
 - `token` es opcional. Si se provee, reemplaza `AUTHORIZATION_API_INTEGRATION` del entorno.
+- `pos` se aplica a todas las consultas (search/insert, hotels/availability, query/list6)
 - Respuesta incluye el resultado del test y rutas de reportes.
 
 ### Uso Programático
